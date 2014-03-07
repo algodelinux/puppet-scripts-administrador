@@ -1,0 +1,13 @@
+#!/bin/bash
+# Comprueba si está instalado en el chroot el paquete que indiquemos como parámetro
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 23-Enero-2013
+
+if [ $# -lt 1 ]; then
+   echo "Modo de uso: $0 paquete-a-comprobar"
+   exit
+fi
+
+ltsp-chroot -a i386 -d -p dpkg -l | grep $1

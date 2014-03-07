@@ -1,0 +1,23 @@
+#!/bin/bash
+# Instala en el chroot el paquete que indiquemos como parámetro
+# Una vez instalado, regenera la imagen de los terminales
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 23-Enero-2013
+
+if [ $# -lt 1 ]; then
+   echo "Modo de uso: $0 paquete-a-instalar"
+   exit
+fi
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts
+ltsp-chroot -a i386 apt-get update
+ltsp-chroot -a i386 apt-get -y install $1
+ltsp-chroot -a i386 apt-get -y autoremove
+ltsp-chroot -a i386 apt-get clean
+umount proc-chroot
+umount devpts-chroot
+
+#ltsp-update-image --arch i386

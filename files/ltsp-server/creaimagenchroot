@@ -1,0 +1,9 @@
+#!/bin/bash
+# Hace un upgrade de los paquetes del chroot
+# A continuación, regenera la imagen de los terminales
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 19-Septiembre-2013
+
+ltsp-update-image --arch i386

@@ -1,0 +1,17 @@
+#!/bin/bash
+# Actualiza flash en el chroot
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 17-Octubre-2013
+
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts
+
+# ltsp-chroot -a i386 http_proxy=http://recursos:3128 update-flashplugin-nonfree --install
+
+ltsp-chroot -a i386 update-flashplugin-nonfree --install
+
+umount proc-chroot
+umount devpts-chroot

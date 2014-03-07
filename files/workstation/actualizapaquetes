@@ -1,0 +1,10 @@
+#!/bin/bash
+# Realiza un apt-get upgrade y limpia paquetes desinstalados
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 27-Septiembre-2013
+
+apt-get -y upgrade 
+apt-get -y remove --purge $(dpkg -l| grep ^rc | awk '{print $2}')
+apt-get -y autoremove

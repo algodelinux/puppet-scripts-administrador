@@ -1,0 +1,20 @@
+#!/bin/bash
+# Instala el kernel y los headers que le indiquemos en las variables KERNEL y HEADERES en el chroot
+# Una vez instalado, regenera la imagen de los terminales y actualiza los kernels en:
+#  * /var/lib/tftpboot
+#  * /srv/tftp
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 22-Enero-2013
+
+KERNEL="linux-image-2.6.32-5-686"
+HEADERS="linux-headers-2.6.32-5-686"
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts  
+ltsp-chroot -a i386 apt-get -y install $KERNEL $HEADERS 
+umount proc-chroot
+umount devpts-chroot
+ltsp-update-image --arch i386
+ltsp-update-kernels

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Hace un upgrade de los paquetes del chroot
+# A continuación, regenera la imagen de los terminales
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 29-Enero-2013
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts
+ltsp-chroot -a i386 apt-get update
+ltsp-chroot -a i386 apt-get -y upgrade
+ltsp-chroot -a i386 apt-get -y autoremove
+ltsp-chroot -a i386 apt-get clean
+umount proc-chroot
+umount devpts-chroot
+
+#ltsp-update-image --arch i386

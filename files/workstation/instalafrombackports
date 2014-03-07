@@ -1,0 +1,17 @@
+#!/bin/bash
+# Instala el paquete que indiquemos como parámetro
+# desde el repositorio de backports
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 23-Enero-2013
+
+if [ $# -lt 1 ]; then
+   echo "Modo de uso: $0 paquete-a-instalar"
+   exit
+fi
+
+apt-get update
+apt-get -t squeeze-backports -y install $1
+apt-get -y autoremove
+apt-get clean

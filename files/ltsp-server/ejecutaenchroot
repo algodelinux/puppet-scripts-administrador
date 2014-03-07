@@ -1,0 +1,13 @@
+#!/bin/bash
+# Ejecuta en el chroot el comando que indiquemos como parámetro
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 26-Febrero-2014
+
+if [ $# -lt 1 ]; then
+   echo "Modo de uso: $0 comando-a-ejecutar"
+   exit
+fi
+
+ltsp-chroot -a i386 -d -p $1

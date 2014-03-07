@@ -1,0 +1,20 @@
+#!/bin/bash
+# Hace limpieza en el chroot purgando paquetes desinstalados, huérfanos y limpiando la cache de apt
+# Una vez instalado, regenera la imagen de los terminales
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 07-Marzo-2013
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts
+ltsp-chroot -a i386 apt-get -y install deborphan
+ltsp-chroot -a i386 apt-get -y remove --purge $(ltsp-chroot -a i386 deborphan)
+ltsp-chroot -a i386 apt-get -y remove --purge $(ltsp-chroot -a i386 deborphan --libdev)
+ltsp-chroot -a i386 apt-get -y remove --purge $(ltsp-chroot -a i386 dpkg -l| grep ^rc | awk '{print $2}')
+ltsp-chroot -a i386 apt-get -y autoremove
+ltsp-chroot -a i386 apt-get clean
+umount proc-chroot
+umount devpts-chroot
+
+#ltsp-update-image --arch i386

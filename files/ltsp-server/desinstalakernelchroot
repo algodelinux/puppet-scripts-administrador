@@ -1,0 +1,20 @@
+#!/bin/bash
+# Desinstala el kernel que le indiquemos en la variables KERNEL en el chroot
+# Una vez instalado, regenera la imagen de los terminales y actualiza los kernels en:
+#  * /var/lib/tftpboot
+#  * /srv/tftp
+
+# Esteban M. Navas Martín
+# Administrador Informático del IES Valle del Jerte.
+# 22-Enero-2013
+
+KERNEL="linux-image-3.2.0-0.bpo.2-686-pae"
+HEADERS1="linux-headers-3.2.0-0.bpo.2-686-pae"
+
+mount -t proc proc-chroot /opt/ltsp/i386/proc
+mount -t devpts devpts-chroot /opt/ltsp/i386/dev/pts  
+ltsp-chroot -a i386 apt-get -y remove --purge $KERNEL $HEADERS1 $HEADERS2
+umount proc-chroot
+umount devpts-chroot
+ltsp-update-image --arch i386
+ltsp-update-kernels
