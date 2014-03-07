@@ -1,21 +1,21 @@
-class scripts-administrador {
+class puppet-scripts-administrador {
 
    case $use {
         "portatil-profesor-2011": {
            file { "/usr/local/sbin":
-              source=>"puppet://puppetinstituto/scripts-administrador/portatil-profesor",
+              source=>"puppet://puppetinstituto/puppet-scripts-administrador/portatil-profesor",
               recurse => true
            }
          }
         "portatil-alumno-2011": {
            file { "/usr/local/sbin":
-              source=>"puppet://puppetinstituto/scripts-administrador/portatil-alumno",
+              source=>"puppet://puppetinstituto/puppet-scripts-administrador/portatil-alumno",
               recurse => true
            }
         }
         "ltsp-server": {
            file { "/usr/local/sbin":
-              source => "puppet://puppetinstituto/scripts-administrador/ltsp-server",
+              source => "puppet://puppetinstituto/puppet-scripts-administrador/ltsp-server",
               recurse => true
            }
            
@@ -29,7 +29,7 @@ class scripts-administrador {
         }
         "workstation": {
            file { "/usr/local/sbin":
-              source=>"puppet://puppetinstituto/scripts-administrador/workstation",
+              source=>"puppet://puppetinstituto/puppet-scripts-administrador/workstation",
               recurse => true
            }
 
