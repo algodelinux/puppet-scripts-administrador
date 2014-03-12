@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# rpkgsync: Ejecuta pkgsync de forma no concurrente en los equipos conectados a la subred 192.168.0.0 del servidor de aula.
+#
+# Este script utiliza:
+#    * nmap para detectar los equipos encendidos en dicha subred obteniendo el rango de IP's posibles desde el servidor ldap
+#    * dsh  para lanzar pkgsync sobre los equipos detectados
+#    * ssh-keyscan para obtener las claves rsa de los equipos encendidos
+#
+# Se asume que el administrador tiene establecida una relación de confianza entre el servidor de aula y los equipos que acceden
+# a la red a través de él
+#
+# Esteban M. Navas Martín <algodelinux@gmail.com>
+# IES Valle del Jerte - Plasencia
+# 12/03/2014
+
+
+RANGO=`ldapsearch -xLLL -h ldap -b "dc=instituto,dc=extremadura,dc=es" "(cn=192.168.0.0)" | grep dhcpRange | cut -f2 -d":"| sed -e 's/^ *//' -e 's/ *$//'
+`
+RED="`echo $RANGO | cut -f1 -d" "`"-"`echo $RANGO | cut -f2 -d" " | cut -f4 -d"."`"
+PUERTO=22
+
+# Instalar dsh si no está instalado aún
+dpkg -l | grep ^"ii  dsh" > /dev/null || apt-get -y install dsh
+
+# Instalar nmap si no está instalado aún
+dpkg -l | grep ^"ii  nmap" > /dev/null || apt-get -y install nmap
+
+nmap -p $PUERTO $RED | grep -B 3 "open" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort | uniq > /etc/dsh/group/encendidos
+
+test -s /etc/dsh/group/encendidos || exit 1
+
+# Obtenemos las claves rsa de los equipos encendidos
+ssh-keyscan -t rsa -f /etc/dsh/group/encendidos > /tmp/rsaterminalesUp
+
+# Añadimos las claves rsa de los equipos encendidos al fichero known_hosts de root del servidor
+sort -o /root/.ssh/known_hosts -m /tmp/rsaterminalesUp /root/.ssh/known_hosts
+sort -o /root/.ssh/known_hosts -u /root/.ssh/known_hosts
+
+# Construimos la lista completa de máquinas detectadas
+sort -o /etc/dsh/machines.list -m /etc/dsh/group/encendidos /etc/dsh/machines.list
+sort -o /etc/dsh/machines.list -u /etc/dsh/machines.list
+
+# Actualizamos los portátiles con pkgsync
+dsh -M -w -g encendidos pkgsync
