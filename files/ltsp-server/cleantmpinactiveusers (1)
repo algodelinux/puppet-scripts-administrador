@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Este script  elimina los ficheros temporales de los usuarios que no están activos en el sistema
+# Esteban M. Navas Martín
+# 20/06/2013
+
+# Obtenemos la lista de usuarios que han iniciado sesión en terminales
+w | grep '192.168.0' > /tmp/userstoclean
+
+# Para cada usuario que haya iniciado sesión en un terminal...
+while read SESION ; do
+
+   USUARIO=`echo $SESION | cut -f1 -d" "`
+
+   IP=`echo $SESION | cut -f3 -d" "`
+   SESIONKO=`arp -i eth0 | grep 'incomplete' | grep $IP`
+
+   if [ ! -z "$SESIONKO" ]; then
+      # Borramos los temporales creados al iniciar sesión los usuarios en los terminales
+      find /tmp -not -user root -user $USUARIO -exec rm -r {} \; 2>/dev/null
+
+      # Matamos todos los procesos del usuario
+      pkill -9 -u $USUARIO
+   fi
+done < /tmp/userstoclean
+
+rm /tmp/userstoclean
