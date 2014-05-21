@@ -9,13 +9,10 @@
 #
 # La idea es utilizar este script como tarea cron de forma que se ejecute cada cierto tiempo
 
-# Comprobamos si hay algún usuario logueado en el terminal gráfico
-USUARIO=`w|grep ":0" | cut -f1 -d" "`
-
-# Si hay un usuario logueado, finalizamos
-if [ $USUARIO ]; then
+# Si hay un usuario logueado en el sistema, finalizamos
+if [ $(/usr/bin/w|/bin/grep ":0" | /usr/bin/cut -f1 -d" ") ]; then
    exit 0
 fi
 
 # Si no hay un usuario logueado, apagamos los terminales y suspendemos el equipo
-/usr/sbin/apagaterminales.sh && pm-suspend
+/usr/sbin/apagaterminales.sh && /usr/sbin/pm-suspend &
