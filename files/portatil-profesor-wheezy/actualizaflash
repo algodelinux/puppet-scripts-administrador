@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# actualizaflash -> Actualiza el plugin de flash, si no se encuentra actualizado ya
+#
+# Esteban M. Navas
+# IES Valle del Jerte - Plasencia
+# 26/02/2015
+
+
+# Instalamos el paquete flashplugin-nonfree, si no está instalado aún
+dpkg -l | grep ^"ii  flashplugin-nonfree" > /dev/null || apt-get -y install flashplugin-nonfree
+
+update-flashplugin-nonfree --status | grep -e installed -e available > /tmp/flashplugin
+installed=`grep "installed" /tmp/flashplugin | cut -f2 -d":" | sed 's/^ *//g'`
+available=`grep "available" /tmp/flashplugin | cut -f2 -d":" | sed 's/^ *//g'`
+
+if [ "$installed"  != "$available" ]; then
+   update-flashplugin-nonfree --install
+fi

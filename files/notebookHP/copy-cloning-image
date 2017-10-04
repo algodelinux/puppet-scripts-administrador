@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# nombre              : copy-cloning-image
+# descripción         : Reemplazar imagen de clonación en partición de clonación de portátil mediante SDCARD
+# autor               : Esteban M. Navas Martín
+# fecha creación      : 04102017
+# última modificación : 04102017
+# uso                 : copy-cloning-image
+# instalación         : Guardar en  /usr/local/sbin/
+
+#
+# Copyright 2015, Esteban M. Navas Martín <algodelinux@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License at <http://www.gnu.org/licenses/> for
+# more details.
+#
+
+PART_CLONEZILLA=sda3
+PART_SDCARD=sdb1
+
+# Creamos puntos de montaje y montamos PART_CLONEZILLA y $PART_SDCARD
+# PART_CLONEZILLA => partición de clonación
+# PART_SDCARD => tarjeta sd
+test -d /mnt/$PART_CLONEZILLA || mkdir /mnt/$PART_CLONEZILLA && mount /dev/$PART_CLONEZILLA /mnt/$PART_CLONEZILLA
+test -d /mnt/$PART_SDCARD || mkdir /mnt/$PART_SDCARD && mount /dev/$PART_SDCARD /mnt/$PART_SDCARD
+
+# Borramos las imágenes que pudiera haber en la partición de clonación
+rm -r /mnt/$PART_CLONEZILLA/home/partimag/*
+
+# Copiamos la nueva imagen
+rsync -av /mnt/$PART_SDCARD/ /mnt/$PART_CLONEZILLA/
+
+# Desmontamos particiones y borramos directorios de montaje
+umount /dev/$PART_CLONEZILLA && rm -r /mnt/$PART_CLONEZILLA
+umount /dev/$PART_SDCARD && rm -r /mnt/$PART_SDCARD

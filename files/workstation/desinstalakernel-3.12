@@ -1,0 +1,9 @@
+#!/bin/bash
+
+arquitectura=`facter architecture`
+
+if [ $arquitectura = "i386" ]; then
+   apt-get -y remove --purge linux-image-3.12-0.bpo.1-686-pae linux-headers-3.12-0.bpo.1-686-pae && apt-get -y autoremove
+   exit 0
+fi
+

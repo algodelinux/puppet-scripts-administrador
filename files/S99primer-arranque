@@ -1,0 +1,179 @@
+#!/bin/sh
+#Script que se ejecuta en el primer arranque de la máquina.
+#Sirve para configurar la máquina después de una clonación o una reasignación a principio de curso escolar.
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+CONSOLE=/dev/console
+export CONSOLE
+if [ -r /etc/default/locale ]; then
+  . /etc/default/locale
+  export LANG LANGUAGE
+fi
+
+rm -f /etc/skel/.gnome2/keyrings/* 2>/dev/null
+rm -f /etc/udev/rules.d/70-persistent-net.rules 2>/dev/null
+rm -f /etc/NetworkManager/system-connections/* 2>/dev/null
+rm -f /var/lib/dhcp/* 2>/dev/null
+rm -f /home/profesor/* 2>/dev/null
+rm -f /home/alumnos/* 2>/dev/null
+
+# Borramos las credenciales de usuario cacheadas
+for usuario in `cc_dump |awk '{print $3}' | sed '1,2d'`; do
+    cc_test -update any $usuario -
+done
+
+
+: ${DIALOG=dialog}
+
+MAC1=`/sbin/ifconfig eth0 | grep HWa | cut -c39-55`
+MAC2=`/sbin/ifconfig wlan0 | grep HWa | cut -c39-55`
+
+IP=`/sbin/ifconfig eth0 2>&1 |grep 'inet addr:'|tr a-zA-Z: " "|awk '{print $1}'`
+IPw=`/sbin/ifconfig wlan0 2>&1 |grep 'inet addr:'|tr a-zA-Z: " "|awk '{print $1}'`
+DNSNAME=`host $IP | grep pointer | awk '{ print $5 }'  | sed -e 's/\.$//g' `
+NOMBRE=`echo $DNSNAME | cut -f1 -d"."`
+
+$DIALOG --title "Información relevante de este ordenador" --clear \
+        --msgbox "
+\n      
+        Los datos relevantes de este ordenador que se han obtenido de la red del centro son:\n\
+\n\
+        MAC-ethernet = $MAC1 \n\
+        MAC-wifi = $MAC2 \n\
+        IP-ethernet = $IP  \n\
+        IP-wifi = $IPw \n\
+        NOMBRE = $DNSNAME \n\
+\n\
+Tanto la dirección IP como el nombre, se corresponden con los
+datos almacenados actualmente \
+en la base de datos LDAP. Si este ordenador va a ser destinado a un profesor \
+necesitará que la IP y el nombre se hayan ajustado previamente en LDAP, si no es así, 
+más adelante podrá cancelar esta configuración para que ponga previamente los datos correctos en LDAP. 
+\n\
+Por otra parte, si este ordenador va a ser asignado a un alumno,
+los datos de IP y MAC no son necesarios y solo necesitará el nombre del usuario del mismo." 23 70
+
+case $? in
+  0) ;;
+1) ;;
+
+esac
+
+
+$DIALOG --title "¿Preparando el portátil en un IES?" --clear \
+        --yesno "
+	Si se va a terminar de configurar este portátil en un IES, conteste Sí (Yes) a esta pregunta.
+	En este caso se le preguntará más adelante si el ordenador se va a entregar a un profesor o a un alumno. \
+	En caso de ser asignado a un profesor, se le preguntará por el área a la que pertenece el profesor.
+	\n\
+\n\
+En ambos casos también se le preguntará por el nombre de usuario, que a su vez va a ser igual al nombre de ordenador. 
+\n\
+	\n\
+	Si no desea configurar el ordenador en este momento, elija NO" 18  65 
+
+case $? in
+
+  0)
+
+tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
+trap "rm -f $tempfile" 0 1 2 5 15
+
+$DIALOG --clear --title "SELECCIONAR PERFIL" \
+        --menu "Seleccione una opción de la siguiente
+lista, en función del tipo de usuario que va a usar este portátil. \n\
+Utilice las teclas de flecha para desplazarse." 12 69 16 \
+        "1" "Profesor" \
+        "2" "Alumno" 2>$tempfile
+
+retval=$?
+
+perfil=`cat $tempfile`
+
+if [ "$perfil" = "1" ]; then
+
+###### TAREAS DE CONFIGURACION PARA PROFESORES ######
+	cp -f /etc/auto.instituto.profesor /etc/auto.instituto
+        cp -f /etc/escuela2.0-profesor /etc/escuela2.0
+        cp -f /etc/security/group.conf.profesor /etc/security/group.conf
+	rm -rf /etc/skel
+	cp -r /etc/skel-profesor/ /etc/skel/
+
+#### FIN PROFESORES ####
+
+else
+
+###### TAREAS DE CONFIGURACION PARA ALUMNOS ######
+	cp -f /etc/auto.instituto.alumno /etc/auto.instituto
+        cp -f /etc/escuela2.0-alumno /etc/escuela2.0
+        cp -f /etc/security/group.conf.alumno /etc/security/group.conf
+        rm -rf /etc/skel
+        cp -r /etc/skel-alumno/ /etc/skel/
+
+
+#### FIN ALUMNOS ####
+
+
+fi
+
+######################################################
+tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
+trap "rm -f $tempfile" 0 1 2 5 15
+
+$DIALOG --title "Nombre de usuario" --clear \
+        --inputbox "Introduzca el nombre del usuario de este ordenador. Este nombre debe ser una cadena
+de caracteres alfanuméricos en minúsculas, sin espacios:" 15 51 2> $tempfile
+
+retval=$?
+
+case $retval in
+  0)
+    NOMBRE=`cat $tempfile`
+  ;;
+  1) ;;
+esac
+
+  if [ "$NOMBRE" ] ; then
+
+echo "127.0.0.1       localhost
+127.0.1.1       $NOMBRE
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters" > /etc/hosts
+
+
+        #ln -sf /etc/default/grub.linex /etc/default/grub
+        echo "$NOMBRE" >  /etc/hostname
+        hostname -F /etc/hostname
+        rm -Rf /var/lib/puppet/ssl 
+#       mkswap /dev/sda5 2>/dev/null
+#	swapon /dev/sda5 2>/dev/null
+	insserv -r primer-arranque
+
+  else
+
+     $DIALOG --title "ERROR" --clear \
+          --msgbox "Falta el nombre de usuario, por lo que no es posible terminar la configuración.\
+          Puede volverlo a intentar reiniciando este portátil." 12 46
+
+case $? in
+
+  0)   ;;
+
+esac
+fi
+#### FIN de bloque cuando la respuesta es SI en $DIALOG --title "¿Preparando el portátil en un IES?" 
+    ;;
+
+
+
+1)
+#### RESPUESTA "NO" EN $DIALOG --title "¿Preparando el portátil en un IES?"
+echo "La próxima vez que reinicie el ordenador podrá configurarlo de nuevo" ;;
+esac

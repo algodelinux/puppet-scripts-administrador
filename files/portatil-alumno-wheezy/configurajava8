@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# configurajava8 -> Instala y configura Java8 por defecto
+#
+# Esteban M. Navas
+# IES Valle del Jerte - Plasencia
+# 26/02/2015
+
+
+# Instalamos el paquete facter si no está instalado aún
+dpkg -l | grep ^"ii  facter" > /dev/null || apt-get -y install facter
+
+# Instalamos el paquete oracle-java8-jre si no está instalado aún
+dpkg -l | grep ^"ii  oracle-java8-jre" > /dev/null || apt-get -y install oracle-java8-jre
+
+architecture=`facter architecture`
+
+if [ "$architecture"  = "i386" ]; then
+   update-alternatives --set java /usr/lib/jvm/jre-8-oracle-i586/bin/java
+   update-alternatives --set mozilla-javaplugin.so /usr/lib/jvm/jre-8-oracle-i586/lib/i386/libnpjp2.so
+elif [ "$architecture"  = "amd64" ]; then
+   update-alternatives --set java /usr/lib/jvm/jre-8-oracle-x64/bin/java
+   update-alternatives --set mozilla-javaplugin.so /usr/lib/jvm/jre-8-oracle-x64/lib/amd64/libnpjp2.so
+fi

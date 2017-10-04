@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# setlocalesES
+# Script para establecer los locales en español
+# Fecha creación: 26/01/2015
+# Fecha última modificación: 27/01/2015
+
+sed -i "s/^#\ es_ES/es_ES/g" /etc/locale.gen
+echo "locales	locales/locales_to_be_generated	multiselect	es_ES ISO-8859-1, es_ES.UTF-8 UTF-8, es_ES@euro ISO-8859-15" | debconf-set-selections
+echo "locales	locales/default_environment_locale	select	es_ES" | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
+echo "LANG=es_ES
+LANGUAGE=es_ES.UTF-8
+LC_ALL=es_ES.UTF-8
+LC_CTYPE=es_ES.UTF-8
+LC_MESSAGES=es_ES.UTF-8
+LC_TIME=es_ES.UTF-8
+LC_PAPER=es_ES.UTF-8
+LC_MEASUREMENT=es_ES.UTF-8
+LC_MONETARY=es_ES.UTF-8
+LC_NUMERIC=es_ES.UTF-8" > /etc/default/locale
+
+

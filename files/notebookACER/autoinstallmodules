@@ -1,0 +1,2 @@
+#!/bin/bash
+dkms status |grep $(uname -r) || ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start

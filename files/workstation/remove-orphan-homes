@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# Elimina directorios HOME huérfanos de alumnos y profesores
+#
+# Esteban M. Navas Martin
+# algodelinux@gmail.com
+# Fecha creacion: 09/11/2016
+
+remove_home() {
+   for usuario in `ls /home/$1`; do
+
+      if [ "$usuario" = "dpto" ]; then continue; fi
+
+      USUARIO=$(stat -c '%U' /home/$1/$usuario 2>/dev/null)
+
+      if [ "$USUARIO" == "UNKNOWN" ]; then
+         echo "El usuario $usuario no existe"
+         echo "Borrando /home/$1/$usuario"
+         rm -r /home/$1/$usuario
+      fi
+   done
+}
+
+remove_home alumnos
+remove_home profesor

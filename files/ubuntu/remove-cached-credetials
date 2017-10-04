@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Esteban M. Navas Martin
+# algodelinux@gmail.com
+# Fecha creacion: 10/11/2016
+
+# Borramos las credenciales de usuario cacheadas
+if [ -x /usr/sbin/cc_test ]; then
+   for usuario in `cc_dump |awk '{print $3}' | sed '1,2d'`; do
+       cc_test -update any $usuario -
+   done
+fi

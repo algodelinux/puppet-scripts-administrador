@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+FAILSAFEXSERVER=$(ps aux | grep -v grep | grep failsafeXinit)
+
+if [[ ! -z $FAILSAFEXSERVER ]]; then
+   killall failsafeXinit
+   killall failsafeXServer
+   dpkg-reconfigure nvidia-siatic
+   reboot
+fi

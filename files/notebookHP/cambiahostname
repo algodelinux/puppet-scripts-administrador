@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Esteban M. Navas <algodelinux@gmail.com>
+# 08/07/2016
+
+DIALOG="dialog"
+tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
+trap "rm -f $tempfile" 0 1 2 5 15
+
+$DIALOG --title "Nombre de host" --clear \
+        --inputbox "Introduzca el nombre de host que desea asignar a este equipo. Este nombre debe ser una cadena de caracteres alfanuméricos en minúsculas, sin espacios:" 15 51 2> $tempfile
+
+retval=$?
+
+case $retval in
+  0)
+    NOMBRE=`cat $tempfile`
+  ;;
+  1) ;;
+esac
+
+if [ "$NOMBRE" ] ; then
+
+   echo "127.0.0.1       localhost
+127.0.1.1       $NOMBRE
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters" > /etc/hosts
+
+
+        echo "$NOMBRE" >  /etc/hostname
+        hostname -F /etc/hostname
+
+puppet agent -t
+
+fi
